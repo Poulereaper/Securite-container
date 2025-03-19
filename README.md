@@ -8,6 +8,9 @@ Ce dépôt contient les travaux pratiques et projets réalisés dans le cadre du
 - Alexis RAYNAL : alexis.raynal@edu.ece.fr
 - Mathis GRAS : mathis.gras@edu.ece.fr
 
+## Enseignant
+eloutsch@omnesintervenant.com
+
 ## Lien du cours
 https://etyy.gitlab.io/support-cours/ece/container_security/intro/
 
