@@ -39,7 +39,7 @@ git clone https://github.com/Poulereaper/Securite-container.git
 
 ## Utilisation
 
-Consultez le fichier sessionsX.md dans chaque sous-dossier pour des instructions spécifiques concernant les sessions et projets de ce cours.
+Consultez les fichiers sessionsX.md pour des instructions spécifiques concernant les sessions et projets de ce cours.
 
 
 
