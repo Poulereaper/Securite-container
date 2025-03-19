@@ -141,7 +141,7 @@ Un attaquant pourrait lire, modifier ou supprimer des fichiers critiques. et il 
 
 - Écrire un Dockerfile minimaliste :
 
-```
+```dockerfile
 FROM alpine
 RUN adduser -D appuser
 USER appuser
@@ -265,3 +265,51 @@ grype alpine:latest
 - Il parvient à exécuter du code sur l’hôte et récupérer la sauvegarde d'une base de données qui contient des données bancaires.
 - Quelles mesures auraient pu empêcher cette attaque ?
 
+### Mesures pour empêcher l'attaque par élévation de privilège
+
+**1. Ne pas utiliser `--privileged`**
+
+Un container en mode privilégié peut presque tout faire sur l’hôte. **Il faut éviter de l’utiliser sauf cas très spécifiques.**
+
+**2. Utiliser un utilisateur `non-root`**
+
+Par défaut, un container tourne en `root`. Créer et utiliser un utilisateur restreint dans le Dockerfile :
+
+```dockerfile
+RUN adduser -D appuser  
+USER appuser
+```
+
+**3. Restreindre les volumes montés**
+
+L’attaquant a récupéré la base de données car le container avait accès aux fichiers de l’hôte. **Ne jamais monter `/` ou d’autres répertoires critiques**.
+
+**4. Utiliser des capacités minimales (`--cap-drop` et `--cap-add`)**
+
+Limiter les capacités du container pour réduire l’impact d’un exploit :
+
+```bash
+docker run --rm --cap-drop=ALL --cap-add=NET_BIND_SERVICE mon-container-jsp
+```
+
+**5. Restreindre l’accès réseau**
+
+Si un attaquant prend le contrôle du container, il ne doit pas pouvoir se connecter à l’hôte ou exfiltrer des données.
+
+- Utiliser des réseaux isolés (`docker network`)
+- Définir des règles avec `iptables` ou `ufw` (basé sur linux)
+
+**6. Scanner les images pour détecter les failles**
+
+Vérifier régulièrement les vulnérabilités des images avec Trivy ou Grype (comme vu dans ce tp)  et les mettre à jour.
+
+```bash
+trivy image mon-container-jsp
+```
+7. Activer le mode "read-only" pour limiter les modifications
+
+Empêche les écritures malveillantes sur le container :
+
+```bash
+docker run --rm --read-only my-container
+```
