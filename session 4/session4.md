@@ -67,7 +67,7 @@ La signature de la première image est bien vérifiée. Cela montre que nous avo
 
 ![alt text](images/6.png)
 
-La signature de la deuxième image revoit une erreur. En effet, nous avons pas signé cette image, donc la signature n'est pas trouvée.
+La signature de la deuxième image renvoit une erreur. En effet, nous avons pas signé cette image, donc la signature n'est pas trouvée.
 
 ### Sécurité dans les Pipelines CI/CD
 
@@ -181,5 +181,5 @@ La signature de la deuxième image revoit une erreur. En effet, nous avons pas s
 
   ![alt text](images/12.png)
 
-  La pipeline échoue au stage 4, celui du scan avec trivy_scan, car la version 3.12 de Alpine est une ancienne version (2020) qui n'est plus maintenue depuis 2022. Cette version inclue également Curl 7.79.1 qui date de 2021 et sur laquelle plusieurs CVE (Common Vulnerabilities and Exposures) existent.
+  La pipeline échoue au stage 4, celui du scan avec trivy_scan, car la version 3.12 de Alpine est une ancienne version (2020) qui n'est plus maintenue depuis 2022. On utilise également Curl 7.79.1 qui date de 2021 et sur laquelle plusieurs CVE (Common Vulnerabilities and Exposures) existent.
   Et comme Trivy, dans le pipeline, est configuré pour échouer si des vulnérabilités de niveau HIGH ou CRITICAL sont détectées. Ce scan va donc détecter des vulnérabilités critiques ou hautes dans cette image, ce qui va provoquer un échec intentionnel de l'étape (exit-code 1).
