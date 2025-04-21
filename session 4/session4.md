@@ -15,6 +15,8 @@ curl -sSfL https://github.com/sigstore/cosign/releases/latest/download/cosign-li
 
 ![alt text](images/1.png)
 
+L'installation de Cosign et la génération de clé la clé publique et privée a bien fonctionné.
+
 2. **Signer une image Docker et la pousser vers GitLab**
 
 ```bash
@@ -60,7 +62,12 @@ docker push registry.gitlab.com/ashtaggg/securitecontainerssession4:v2
 - Quelles sont les résultats de ces 2 commandes ?
 
 ![alt text](images/5.png)
+
+La signature de la première image est bien vérifiée. Cela montre que nous avons bien signé cette image.
+
 ![alt text](images/6.png)
+
+La signature de la deuxième image revoit une erreur. En effet, nous avons pas signé cette image, donc la signature n'est pas trouvée.
 
 ### Sécurité dans les Pipelines CI/CD
 
@@ -152,6 +159,15 @@ docker push registry.gitlab.com/ashtaggg/securitecontainerssession4:v2
    ![alt text](images/9.png)
    ![alt text](images/10.png)
 
+   Nous avons git push, et comme on peut le voir sur le pipeline, toutes les étapes sont bien validés.
+   Voici un petit détail des 4 étapes :
+
+   - Stage 1 : lint (hadolint-scan).
+     Cette étape utilise Hadolint, un outil qui analyse le fichier Dockerfile pour s'assurer qu'il respecte les bonnes pratiques de sécurité et d'optimisation. Si des problèmes sont détectés dans le Dockerfile, l'étape échouera.
+   - Stage 2 : build (build-image). Cette étape construit l'image Docker à partir du Dockerfile et la pousse vers le registre GitLab. Ensuite, elle signe l'image avec Cosign, ce qui permet de garantir son intégrité et son authenticité.
+   - Stage 3 : verify (verify_image). Cette étape vérifie que l'image Docker, après avoir été signée avec Cosign, est authentique et n'a pas été modifiée. Elle s'assure que l'image qui a été poussée vers GitLab est bien celle qui a été signée.
+   - Stage 4 : scan (trivy_scan). Cette étape utilise Trivy, un outil de scan de sécurité, pour analyser l'image Docker et détecter les vulnérabilités, en particulier celles de gravité HAUTE ou CRITIQUE.
+
 - Simulation d'une Vulnéribilité dans le `Dockerfile`;
 
   ```Dockerfile title="Dockerfile"
@@ -164,3 +180,6 @@ docker push registry.gitlab.com/ashtaggg/securitecontainerssession4:v2
 - Maintenant, faites un `git commit` et un `git push`. La pipeline échoue à quelle étape ? Pourquoi ?
 
   ![alt text](images/12.png)
+
+  La pipeline échoue au stage 4, celui du scan avec trivy_scan, car la version 3.12 de Alpine est une ancienne version (2020) qui n'est plus maintenue depuis 2022. Cette version inclue également Curl 7.79.1 qui date de 2021 et sur laquelle plusieurs CVE (Common Vulnerabilities and Exposures) existent.
+  Et comme Trivy, dans le pipeline, est configuré pour échouer si des vulnérabilités de niveau HIGH ou CRITICAL sont détectées. Ce scan va donc détecter des vulnérabilités critiques ou hautes dans cette image, ce qui va provoquer un échec intentionnel de l'étape (exit-code 1).
