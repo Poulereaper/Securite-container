@@ -43,9 +43,3 @@ git clone https://github.com/Poulereaper/Securite-container.git
 
 Consultez les fichiers sessionsX.md pour des instructions spécifiques concernant les sessions et projets de ce cours.
 
-## To Do 
-
-- Faire partie 6 de session1 (pas réussit à installer grype sur wsl)
-
-
-
