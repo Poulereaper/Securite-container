@@ -4,6 +4,8 @@
 
 Ce dépôt contient les travaux pratiques et projets réalisés dans le cadre du cours de sécurité des containers à l'ECE.
 
+**Lien Projet GitLab** : gitlab.com/Poulereaper/minecraft-secure-server-k8s
+
 ## Membres du groupe
 - Alexis RAYNAL : alexis.raynal@edu.ece.fr
 - Mathis GRAS : mathis.gras@edu.ece.fr
