@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kube-bench
+spec:
+  template:
+    spec:
+      containers:
+      - name: kube-bench
+        image: aquasec/kube-bench:latest
+        command: ["kube-bench"]
+        args: ["--benchmark", "cis-1.6"] # ou cis-1.5 selon ta version Kubernetes
+      restartPolicy: Never

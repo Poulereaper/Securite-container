@@ -196,28 +196,88 @@ kubectl config set-credentials xixi \
 --client-key=xixi.key
 ```  
 
+![alt text](images/image_15.png)
+
+
 - Créer un contexte pour xixi dans le namespace test-rbac  
 ```bash
 kubectl config set-context xixi-context \
 --cluster=kind-kind \
 --namespace=test-rbac \
 --user=xixi
-```  
+``` 
+
+![alt text](images/image_16.png)
+
 
 - Basculer de contexte
 ```bash
 kubectl config use-context xixi-context
 ```
+
+![alt text](images/image_17.png)
+
+
 !!! tip
 `kubectl get ...` `kubectl apply -f monficher.yml` `kubectl logs pod monpod -n namespace`
+
+
 - Maintenant tester de lister les pods dans le namespace `test-rbac`, pouvez vous le faire ?
+```bash
+kubectl get pods
+```
+![alt text](images/image_18.png)
+
+Nous pouvons toujours lister les pods dans le namespace `test-rbac` car le rôle `pod-reader` autorise `get` et `list`.
+
 - Pouvez-vous créer un pod dans le namespace `test-rbac` ? Si non, quel est le message d'erreur ?
+```bash
+kubectl run testpod --image=nginx
+```
+![alt text](images/image_19.png)
+Nous ne pouvons plus créer un pod dans le namespace `test-rbac` car le rôle `pod-reader` ne permet que `get` et `list`, pas `create`. L'erreur nous le dit d'ailleurs de manière explicite.
+
 - Remettez vous dans le contexte `kind-kind`
+```bash
+kubectl config use-context kind-kind
+```
+![alt text](images/image_20.png)
+
+
+On repasse sur le compte admin pour la suite de la session.
+
 
 3. **Scanner un Cluster Kubernetes avec Kube-Bench**
 - Faite un scan de votre cluster avec l'outil [kube-bench](https://aquasecurity.github.io/kube-bench/v0.9.0/)
 - Créer un job avec `kubectl apply -f job.yml` comme expliqué dans la documentation
+
+Voir le fichier `job.yml` dans le même dossier que cette session.
+
+Pour lancer ce job :
+```bash
+kubectl apply -f job.yml
+```
+![alt text](images/image_21.png)
+
+Puis on peut en vérifier l'état :
+```bash
+kubectl get jobs
+kubectl logs job/kube-bench
+```
+![alt text](images/image_22.png)
+
+![alt text](images/image_23.png)
+
 - Donner un rapide résumé de ce bench
+
+Kube-bench analyse la sécurité du cluster selon la norme **CIS Kubernetes Benchmark**.
+
+Il vérifie :
+- Sécurité des API servers
+- Sécurité des nodes
+- Sécurité des certificats, des ports d'écoute, etc.
+
+Enfin il donne des recommandations si quelque chose n'est pas sécurisé correctement.
 
 !!! 🔥tip
 Pour déployer falco il faut `helm` installé sur votre machine. Helm permet de deployer des workloads dans kubernetes.
@@ -228,22 +288,41 @@ Pour déployer falco il faut `helm` installé sur votre machine. Helm permet de 
 helm repo add falcosecurity https://falcosecurity.github.io/charts
 helm repo update
 ```  
+![alt text](images/image_24.png)
+
+
 - Créer un namespace falco 
 ```bash
 kubectl create ns falco
 ```  
+
+![alt text](images/image_25.png)
+
 - Installer la chart `falco` dans le namespace `falco` et ici on active *falcosidekick* pour avoir une UI.
 ```bash
 helm -n falco install falco falcosecurity/falco --set falcosidekick.enabled=true --set falcosidekick.webui.enabled=true
 ```
+![alt text](images/image_26.png)
+
 - Vérifier que vos pods soit `running`, cela peut prendre 2 minutes
 ```bash
 kubectl get pods -n falco
 ```
+![alt text](images/image_27.png)
+
 - Ouvrez un nouveau shell, dans celui ci faites un port forward afin d'afficher l'UI `http://127.0.0.1:2802` de falco dans votre navigateur 
 ```bash
 kubectl port-forward svc/falco-falcosidekick-ui 2802:2802 --namespace falco
 ```  
+![alt text](images/image_28.png)
+
+![alt text](images/image_29.png)
+
+On se connecte avec le login et password par défauts qui sont respectivement `admin` et `admin`.
+
+![alt text](images/image_30.png)
+
+
 5. **Falco en pratique**
 
 - Il n'y a pas beaucoup d'activités sur le cluster (pod), pour y remédier on va installer un pod avec `kubectl apply -f `  
@@ -264,18 +343,44 @@ spec:
     - sleep 1d
 ```  
 
+Voir fichier `front-pod.yml` dans le même dossier que cette session 3.
+
+On lance le pod et on vérifie qu'il s'est bien exécuté :
+```bash
+kubectl apply -f front-pod.yaml
+```
+
+```bash
+kubectl get pods
+```
+
+![alt text](images/image_31.png)
+
+
 - Executer un shell dans le pod afin de générer une alerte consultable via l'interface de falco.
 ```bash
 kubectl exec -it front -- sh
 ```
+![alt text](images/image_32.png)
+
 - Est-ce que vous avez une alerte concernant cette action ? Si oui, quelle est sa priorité ? Et la règle ?
+
+Oui on a bien une alerte de type `Terminal Shell in Container`
+
+![alt text](images/image_33.png)
+
 
 - Toujours dans le shell du pod, générer une requête sur l'API Kubernetes
 ```bash
 apk add curl
 curl -k http://10.96.0.1:80
 ```
+
+![alt text](images/image_34.png)
+
+
 - Est-ce que vous avez une alerte concernant cette action ? Si oui, quelle est sa priorité ? Et la règle ?
 
-!!! 🔥tip
-Maintenant vous êtes des pros de Kubernetes et de la surveillance de celui-ci :fontawesome-regular-face-laugh-wink:
+Oui on a bien une alerte de type `K8s API Server Connection Detected`
+
+![alt text](images/image_35.png)
